@@ -15,9 +15,8 @@ def clean_phonenumber(phonenumber)
   end
 end
 
-def legislators_by_zipcode(zipcode)
+def legislators_by_zipcode(zipcode) # rubocop:disable Metrics/MethodLength
   civic_info = Google::Apis::CivicinfoV2::CivicInfoService.new
-  # The API key is stored in secret.key to follow best practice and not commit files with keys to git
   civic_info.key = File.read('secret.key').strip
 
   begin
@@ -26,13 +25,13 @@ def legislators_by_zipcode(zipcode)
       levels: 'country',
       roles: %w[legislatorUpperBody legislatorLowerBody]
     ).officials
-  rescue
+  rescue StandardError
     'You can find your representatives by visiting www.commoncause.org/take-action/find-elected-officials'
   end
 end
 
 def save_thank_you_letter(id, form_letter)
-  Dir.mkdir('output') unless Dir.exist?('output')
+  Dir.mkdir('output') unless Dir.exist?('output') # rubocop:disable Lint/NonAtomicFileOperation
 
   filename = "output/thanks_#{id}.html"
 
@@ -59,8 +58,8 @@ contents.each do |row|
   legislators = legislators_by_zipcode(zipcode)
   phonenumber = clean_phonenumber(row[:homephone])
 
-  # form_letter = erb_template.result(binding)
+  form_letter = erb_template.result(binding)
 
   # save_thank_you_letter(id, form_letter)
-  puts "#{name} #{phonenumber}"
+  puts "#{id} #{name} #{phonenumber}"
 end
