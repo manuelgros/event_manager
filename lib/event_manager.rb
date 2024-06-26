@@ -40,19 +40,19 @@ def save_thank_you_letter(id, letter_template)
   end
 end
 
-def find_peak_day(dates_and_time)
-  find_largest_hash_key(dates_and_time.map {
-    |date| Date::DAYNAMES[Time.strptime(date, '%D').wday]
-  }.tally)
-end
-
 def find_largest_hash_key(hash)
   hash.key(hash.values.max)
 end
 
+def find_peak_day(dates_and_time)
+  find_largest_hash_key(dates_and_time.map { |date|
+    Date::DAYNAMES[Time.strptime(date, '%D').wday]
+  }.tally)
+end
+
 def find_peak_time(dates_and_time)
-  find_largest_hash_key(dates_and_time.map {
-    |date| Time.strptime(date, '%D %R').hour
+  find_largest_hash_key(dates_and_time.map { |date|
+    Time.strptime(date, '%D %R').hour
   }.tally)
 end
 
