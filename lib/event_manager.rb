@@ -40,6 +40,20 @@ def save_thank_you_letter(id, form_letter)
   end
 end
 
+def find_peak_day(data)
+  array = data.map { |row| row[:regdate] }
+  largest_hash_key(array.map { |date| Time.strptime(date, '%D %R').strftime('%A') }.tally)
+end
+
+def largest_hash_key(hash)
+  hash.key(hash.values.max)
+end
+
+def find_peak_time(data)
+  array = data.map { |row| row[:regdate] }
+  largest_hash_key(array.map { |date| Time.strptime(date, '%D %R').hour }.tally)
+end
+
 puts 'Event Manager Initialized!'
 
 contents = CSV.open(
@@ -61,5 +75,8 @@ contents.each do |row|
   form_letter = erb_template.result(binding)
 
   # save_thank_you_letter(id, form_letter)
-  puts "#{id} #{name} #{phonenumber}"
+   # puts "#{id} #{name} #{phonenumber}"
+  puts "The PEAK TIME for registration was around #{find_peak_time(contents)}:00"
+  contents.rewind
+  puts "The BEST DAY for registration was #{find_peak_day(contents)}"
 end
