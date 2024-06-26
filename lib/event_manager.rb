@@ -30,28 +30,30 @@ def legislators_by_zipcode(zipcode) # rubocop:disable Metrics/MethodLength
   end
 end
 
-def save_thank_you_letter(id, form_letter)
+def save_thank_you_letter(id, letter_template)
   Dir.mkdir('output') unless Dir.exist?('output') # rubocop:disable Lint/NonAtomicFileOperation
 
   filename = "output/thanks_#{id}.html"
 
   File.open(filename, 'w') do |file|
-    file.puts form_letter
+    file.puts letter_template
   end
 end
 
-def find_peak_day(data)
-  array = data.map { |row| row[:regdate] }
-  largest_hash_key(array.map { |date| Time.strptime(date, '%D %R').strftime('%A') }.tally)
+def find_peak_day(dates_and_time)
+  find_largest_hash_key(dates_and_time.map {
+    |date| Date::DAYNAMES[Time.strptime(date, '%D').wday]
+  }.tally)
 end
 
-def largest_hash_key(hash)
+def find_largest_hash_key(hash)
   hash.key(hash.values.max)
 end
 
-def find_peak_time(data)
-  array = data.map { |row| row[:regdate] }
-  largest_hash_key(array.map { |date| Time.strptime(date, '%D %R').hour }.tally)
+def find_peak_time(dates_and_time)
+  find_largest_hash_key(dates_and_time.map {
+    |date| Time.strptime(date, '%D %R').hour
+  }.tally)
 end
 
 puts 'Event Manager Initialized!'
@@ -64,6 +66,7 @@ contents = CSV.open(
 
 template_letter = File.read('form_letter.erb')
 erb_template = ERB.new template_letter
+dates_and_time = []
 
 contents.each do |row|
   id = row[0]
@@ -71,12 +74,13 @@ contents.each do |row|
   zipcode = clean_zipcode(row[:zipcode])
   legislators = legislators_by_zipcode(zipcode)
   phonenumber = clean_phonenumber(row[:homephone])
+  dates_and_time << row[:regdate]
 
   form_letter = erb_template.result(binding)
 
-  # save_thank_you_letter(id, form_letter)
-   # puts "#{id} #{name} #{phonenumber}"
-  puts "The PEAK TIME for registration was around #{find_peak_time(contents)}:00"
-  contents.rewind
-  puts "The BEST DAY for registration was #{find_peak_day(contents)}"
+  save_thank_you_letter(id, form_letter)
+  puts "#{id} #{name} #{phonenumber}"
 end
+
+puts "\nThe PEAK TIME for registration was around #{find_peak_time(dates_and_time)}:00"
+puts "The BEST DAY for registration was #{find_peak_day(dates_and_time)}"
